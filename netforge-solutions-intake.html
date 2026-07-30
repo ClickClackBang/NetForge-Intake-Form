@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NetForge Solutions — Website Intake Form</title>
+
+<meta name="description" content="Tell us about your business so we can build your website. Takes about 5 minutes, fill it out whenever works for you.">
+<meta property="og:title" content="NetForge Solutions — Website Intake Form">
+<meta property="og:description" content="Tell us about your business so we can build your website. Takes about 5 minutes.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+<style>
+  :root{
+    --ink:#1c2420;
+    --muted:#5b6a62;
+    --line:#dde3df;
+    --bg:#fbfaf7;
+    --card:#ffffff;
+    --accent:#2e5e4e;
+    --accent-dark:#1f4437;
+    --accent-tint:#eaf1ee;
+    --danger:#b3452f;
+    --radius:10px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  #app{background:var(--bg);min-height:100vh;padding:0 0 60px 0;color:var(--ink);}
+  .header{background:var(--accent);color:#fff;padding:22px 20px 20px;}
+  .header h1{margin:0 0 4px;font-size:1.25rem;font-weight:700;letter-spacing:.2px;}
+  .header p{margin:0;font-size:.85rem;opacity:.9;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:18px;overflow:hidden;}
+  .card-head{background:var(--accent-tint);color:var(--accent-dark);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 16px;border-bottom:1px solid var(--line);}
+  .card-body{padding:16px;}
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-size:.83rem;font-weight:600;margin-bottom:6px;color:var(--ink);}
+  .hint{font-weight:400;color:var(--muted);font-size:.78rem;margin-left:4px;}
+  input[type=text],input[type=tel],input[type=email],input[type=url],textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:.95rem;
+    background:#fff;color:var(--ink);font-family:inherit;
+  }
+  
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+  textarea{resize:vertical;min-height:60px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:480px){.row2{grid-template-columns:1fr;}}
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.85rem;cursor:pointer;user-select:none;background:#fff;color:var(--ink);transition:all .12s;}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .yn{display:flex;gap:8px;}
+  .photo-drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px;text-align:center;cursor:pointer;background:#fcfcfb;}
+  .photo-drop:hover{border-color:var(--accent);background:var(--accent-tint);}
+  .photo-drop input{display:none;}
+  .photo-drop .icon{font-size:1.5rem;display:block;margin-bottom:4px;}
+  .photo-drop .txt{font-size:.85rem;color:var(--muted);}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:12px;}
+  .thumb{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:#f2f2f0;}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb button{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;line-height:1;cursor:pointer;}
+  .note{font-size:.78rem;color:var(--muted);margin-top:8px;}
+  .submit-bar{position:sticky;bottom:0;background:linear-gradient(to top, var(--bg) 60%, transparent);padding:14px 0 4px;margin-top:8px;}
+  .btn{display:block;width:100%;padding:13px;border:none;border-radius:9px;background:var(--accent);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;}
+  .btn:active{background:var(--accent-dark);}
+  .btn[disabled]{opacity:.6;}
+  .success{padding:60px 20px;text-align:center;}
+  .success .mark{width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 16px;}
+  .success h2{margin:0 0 8px;}
+  .success p{color:var(--muted);}
+</style>
+</head>
+
+<body>
+<div id="app"></div>
+
+<script>
+const { useState, useRef } = React;
+
+const VIBES = ["Professional","Friendly","Bold","Luxury"];
+
+// ---- SETUP STEP ----
+// 1. https://formspree.io 
+// 2. Replace the endpoint provided (looks like https://formspree.io/f/xxxxxxxx).
+
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xnjeypbb";
+
+function emptyForm(){
+  return {
+    business_name:"", business_description:"", tagline:"", phone:"", email:"",
+    address:"", hours:"", logo_status:"", main_colors:"", vibe:[],
+    service_1:"", service_2:"", service_3:"", photo_notes:"",
+    gbp_link:"", gbp_rating:"", gbp_review_count:"", instagram:"", facebook:"",
+    booking:"", payments:"", self_edit:"", domain_name:""
+  };
+}
+
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 1000;
+        let {width,height} = img;
+        if(width>height && width>maxDim){ height*=maxDim/width; width=maxDim; }
+        else if(height>maxDim){ width*=maxDim/height; height=maxDim; }
+        const canvas = document.createElement("canvas");
+        canvas.width=width; canvas.height=height;
+        canvas.getContext("2d").drawImage(img,0,0,width,height);
+        canvas.toBlob(blob=>resolve({blob, dataUrl: canvas.toDataURL("image/jpeg",0.75)}), "image/jpeg", 0.75);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function Chip({label, active, onClick}){
+  return React.createElement("div",{className:"chip"+(active?" active":""), onClick}, label);
+}
+
+function App(){
+  const [form,setForm] = useState(emptyForm());
+  const [photos,setPhotos] = useState([]); // {id, blob, dataUrl}
+  const [submitting,setSubmitting] = useState(false);
+  const [submitted,setSubmitted] = useState(false);
+  const [error,setError] = useState("");
+  const fileRef = useRef(null);
+
+  function set(field, value){ setForm(f=>({...f,[field]:value})); }
+  function toggleChip(field, value, multi){
+    setForm(f=>{
+      if(multi){
+        const cur = f[field] || [];
+        const has = cur.includes(value);
+        return {...f,[field]: has ? cur.filter(v=>v!==value) : [...cur, value]};
+      }
+      return {...f,[field]: f[field]===value ? "" : value};
+    });
+  }
+
+  async function handleFiles(fileList){
+    const files = Array.from(fileList).slice(0, 8 - photos.length);
+    for(const file of files){
+      try{
+        const { blob, dataUrl } = await compressImage(file);
+        setPhotos(p=>[...p, {id: Date.now()+Math.random(), blob, dataUrl}]);
+      }catch(e){ console.error("compress error", e); }
+    }
+  }
+
+  function removePhoto(id){
+    setPhotos(p=>p.filter(ph=>ph.id!==id));
+  }
+
+  async function submit(){
+    if(!form.business_name.trim()){
+      setError("Business name is required.");
+      return;
+    }
+    if(FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")){
+      setError("Form isn't connected yet — set FORMSPREE_ENDPOINT in the code first.");
+      return;
+    }
+    setError("");
+    setSubmitting(true);
+    try{
+      const fd = new FormData();
+      Object.entries(form).forEach(([k,v])=>{
+        fd.append(k, Array.isArray(v) ? v.join(", ") : (v || ""));
+      });
+      photos.forEach((p,i)=> fd.append(`photo_${i+1}`, p.blob, `photo_${i+1}.jpg`));
+
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: fd,
+        headers: { "Accept": "application/json" }
+      });
+      if(res.ok){
+        setSubmitted(true);
+      }else{
+        setError("Submission failed — please try again in a moment.");
+      }
+    }catch(e){
+      console.error(e);
+      setError("Something went wrong submitting — please check your connection and try again.");
+    }
+    setSubmitting(false);
+  }
+
+  if(submitted){
+    return React.createElement("div",{className:"success"},
+      React.createElement("div",{className:"mark"},"✓"),
+      React.createElement("h2",null,"Thanks — that's submitted!"),
+      React.createElement("p",null,"We've got your info and photos. We'll follow up to get your site started.")
+    );
+  }
+
+  return React.createElement("div",null,
+    React.createElement("div",{className:"header"},
+      React.createElement("h1",null,"Website Intake Form"),
+      React.createElement("p",null,"Fill this out whenever you have a few minutes — nothing to sign, nothing to schedule.")
+    ),
+    React.createElement("div",{className:"wrap"},
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"Business Basics"),
+        React.createElement("div",{className:"card-body"},
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Business Name"),
+            React.createElement("input",{type:"text",value:form.business_name,onChange:e=>set("business_name",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"What do you do? ",React.createElement("span",{className:"hint"},"(one line)")),
+            React.createElement("input",{type:"text",value:form.business_description,onChange:e=>set("business_description",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Tagline ",React.createElement("span",{className:"hint"},"(if you have one)")),
+            React.createElement("input",{type:"text",value:form.tagline,onChange:e=>set("tagline",e.target.value)})
+          ),
+          React.createElement("div",{className:"row2"},
+            React.createElement("div",{className:"field"},
+              React.createElement("label",null,"Phone"),
+              React.createElement("input",{type:"tel",value:form.phone,onChange:e=>set("phone",e.target.value)})
+            ),
+            React.createElement("div",{className:"field"},
+              React.createElement("label",null,"Email"),
+              React.createElement("input",{type:"email",value:form.email,onChange:e=>set("email",e.target.value)})
+            )
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Address ",React.createElement("span",{className:"hint"},"(if you have a storefront/kiosk)")),
+            React.createElement("input",{type:"text",value:form.address,onChange:e=>set("address",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Hours"),
+            React.createElement("input",{type:"text",value:form.hours,onChange:e=>set("hours",e.target.value)})
+          )
+        )
+      ),
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"Brand"),
+        React.createElement("div",{className:"card-body"},
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Do you have a logo file?"),
+            React.createElement("input",{type:"text",placeholder:"Yes — I'll send it / No / describe",value:form.logo_status,onChange:e=>set("logo_status",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Main color(s)"),
+            React.createElement("input",{type:"text",value:form.main_colors,onChange:e=>set("main_colors",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Vibe ",React.createElement("span",{className:"hint"},"(pick any that fit)")),
+            React.createElement("div",{className:"chip-group"},
+              VIBES.map(v=>React.createElement(Chip,{key:v,label:v,active:form.vibe.includes(v),onClick:()=>toggleChip("vibe",v,true)}))
+            )
+          )
+        )
+      ),
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"What You Sell / Offer"),
+        React.createElement("div",{className:"card-body"},
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Item / Service 1"),
+            React.createElement("input",{type:"text",value:form.service_1,onChange:e=>set("service_1",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Item / Service 2"),
+            React.createElement("input",{type:"text",value:form.service_2,onChange:e=>set("service_2",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Item / Service 3"),
+            React.createElement("input",{type:"text",value:form.service_3,onChange:e=>set("service_3",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Anything else worth noting about your photos?"),
+            React.createElement("textarea",{value:form.photo_notes,onChange:e=>set("photo_notes",e.target.value),placeholder:"e.g. first 3 photos are our bestsellers"})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Upload Photos ",React.createElement("span",{className:"hint"},"(up to 8 — logo, storefront, products)")),
+            React.createElement("div",{className:"photo-drop",onClick:()=>fileRef.current && fileRef.current.click()},
+              React.createElement("span",{className:"icon"},"📷"),
+              React.createElement("span",{className:"txt"}, photos.length>=8 ? "Max 8 photos added" : "Tap to choose photos from your phone"),
+              React.createElement("input",{ref:fileRef,type:"file",accept:"image/*",multiple:true,
+                onChange:e=>{ handleFiles(e.target.files); e.target.value=""; }})
+            ),
+            photos.length>0 && React.createElement("div",{className:"thumbs"},
+              photos.map(p=>React.createElement("div",{className:"thumb",key:p.id},
+                React.createElement("img",{src:p.dataUrl}),
+                React.createElement("button",{onClick:()=>removePhoto(p.id)},"✕")
+              ))
+            ),
+            React.createElement("div",{className:"note"},"Photos are resized automatically so this stays quick to send, even on mobile data.")
+          )
+        )
+      ),
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"Reviews & Social"),
+        React.createElement("div",{className:"card-body"},
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Google Business Profile link ",React.createElement("span",{className:"hint"},"(leave blank if none yet)")),
+            React.createElement("input",{type:"url",value:form.gbp_link,onChange:e=>set("gbp_link",e.target.value)})
+          ),
+          React.createElement("div",{className:"row2"},
+            React.createElement("div",{className:"field"},
+              React.createElement("label",null,"Current star rating"),
+              React.createElement("input",{type:"text",value:form.gbp_rating,onChange:e=>set("gbp_rating",e.target.value)})
+            ),
+            React.createElement("div",{className:"field"},
+              React.createElement("label",null,"Number of reviews"),
+              React.createElement("input",{type:"text",value:form.gbp_review_count,onChange:e=>set("gbp_review_count",e.target.value)})
+            )
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Instagram handle or link"),
+            React.createElement("input",{type:"text",value:form.instagram,onChange:e=>set("instagram",e.target.value)})
+          ),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Facebook page link"),
+            React.createElement("input",{type:"text",value:form.facebook,onChange:e=>set("facebook",e.target.value)})
+          )
+        )
+      ),
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"A Few Extra Questions"),
+        React.createElement("div",{className:"card-body"},
+          [
+            ["booking","Do you need online booking?"],
+            ["payments","Do you need to take payments online?"],
+            ["self_edit","Do you want to be able to edit the site yourself later?"]
+          ].map(([field,q])=>React.createElement("div",{className:"field",key:field},
+            React.createElement("label",null,q),
+            React.createElement("div",{className:"yn"},
+              React.createElement(Chip,{label:"Yes",active:form[field]==="Yes",onClick:()=>toggleChip(field,"Yes",false)}),
+              React.createElement(Chip,{label:"No",active:form[field]==="No",onClick:()=>toggleChip(field,"No",false)})
+            )
+          ))
+        )
+      ),
+
+      React.createElement("div",{className:"card"},
+        React.createElement("div",{className:"card-head"},"Domain"),
+        React.createElement("div",{className:"card-body"},
+          React.createElement("div",{className:"note",style:{marginTop:0,marginBottom:10}},"You'll buy and own your domain yourself — we just connect it for you."),
+          React.createElement("div",{className:"field"},
+            React.createElement("label",null,"Domain name ",React.createElement("span",{className:"hint"},"(leave blank if not purchased yet)")),
+            React.createElement("input",{type:"text",value:form.domain_name,onChange:e=>set("domain_name",e.target.value)})
+          )
+        )
+      ),
+
+      error && React.createElement("div",{style:{color:"var(--danger)",marginTop:14,fontSize:".85rem",textAlign:"center"}}, error),
+
+      React.createElement("div",{className:"submit-bar"},
+        React.createElement("button",{className:"btn",disabled:submitting,onClick:submit}, submitting ? "Submitting…" : "Submit")
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("app")).render(React.createElement(App));
+</script>
+</body>
+</html>
